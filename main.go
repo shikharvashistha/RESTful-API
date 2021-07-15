@@ -32,6 +32,8 @@ import (
 	"net/http"
 	"log"
 	"encoding/json"
+	"github.com/gorilla/mux"//We'll use this router package to create our API endpoints
+	//It let's us specify what verbs we can use to access our endpoints in a far simpler fashion.
 )
 
 type Article struct {
@@ -46,9 +48,15 @@ func allArticles(w http.ResponseWriter, r *http.Request) {
 	articles:= Articles{
 		Article{Title:"First Article",Desc:"Article Description",Content:"Article Content"},
 		//http://localhost:8080/articles
+		//This RESTAPI feature one HTTP endpoint
 	}
 	fmt.Fprintf(w, "Endpoint Hit: All Articles Endpoint")
 	json.NewEncoder(w).Encode(articles)
+}
+
+
+func testPostArticles(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Post Request Hit")
 }
 
 func homePage(w http.ResponseWriter, r *http.Request) {
@@ -56,10 +64,17 @@ func homePage(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleRequests(w http.ResponseWriter, r *http.Request) {
-	http.HandleFunc("/", homePage)
+	myRouter:= mux.NewRouter().StrictSlash(true)
+
+	myRouter.HandleFunc("/", homePage)
 	//We need to register our function 
-	http.HandleFunc("/articles", allArticles)//We wanted to return with the function all articles.
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	myRouter.HandleFunc("/articles", allArticles).Methods("GET")//We wanted to return with the function all articles.
+	//myRouter.HandleFunc("/articles", allArticles).Methods("GET") Then it'll only be accessible with GET request.
+	//For post requests we can use the following
+	myRouter.HandleFunc("/articles", testPostArticles).Methods("POST")//Check it in "POSTMAN" or rest client of our choice
+	//By changing the http verb we can get different responses on the same API as POST and GET requests.
+	//Essentially two different API locations were hit.
+	log.Fatal(http.ListenAndServe(":8080", myRouter))
 }
 
 func main() {
