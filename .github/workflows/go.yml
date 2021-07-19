@@ -26,5 +26,9 @@ jobs:
           go-version: '${{ matrix.go-version }}'
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Verification
+        run: go mod verify
+      - name: Run
+        run: go run main.go
       - name: Build
         run: go build main.go
